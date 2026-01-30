@@ -1,0 +1,5 @@
+{
+  "name": "DragonVault",
+  "description": "A responsive DnD module archivist allowing users to search, filter, and find adventure modules via AI assistance.",
+  "requestFramePermissions": []
+}

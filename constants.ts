@@ -330,7 +330,7 @@ export const STATIC_CONTENT = {
       现实情况中DM普遍开放更多资源，且战斗频率较低。因此官方模组在2级以后的战斗基本无难度，不纳入考量标准。
     `
   },
-  modulesNote: '所有一级开卡的模组均建议二级开卡以提高生存率。',
+  modulesNote: '所有一级开卡的模组均建议二级开卡。',
   dmResources: {
     title: '带团资源 (DM Tools)',
     items: [

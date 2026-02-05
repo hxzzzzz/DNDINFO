@@ -1,11 +1,15 @@
+'use server';
+
 import { GoogleGenAI } from "@google/genai";
 import { ModuleData } from "../types";
 
 // Initialize Gemini
+// Note: In Next.js Server Actions, process.env.API_KEY is available securely.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
  * Uses Gemini to recommend modules based on a natural language query.
+ * Marked as a Server Action via 'use server' at the top of the file.
  */
 export const getAiRecommendation = async (
   userQuery: string,
@@ -44,7 +48,7 @@ export const getAiRecommendation = async (
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.5-flash',
       contents: userQuery,
       config: {
         systemInstruction: systemPrompt,
@@ -55,6 +59,6 @@ export const getAiRecommendation = async (
     return response.text || "我无法找到特定的模组，但请随意浏览列表！";
   } catch (error) {
     console.error("Gemini API Error:", error);
-    return "众灵沉默（API 错误）。请尝试手动搜索。";
+    return "众灵沉默（API 错误）。请尝试手动搜索，或检查 API Key 配置。";
   }
 };

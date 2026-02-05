@@ -1,29 +1,28 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { ModuleData } from "../types";
 
 // Initialize Gemini
-// Note: In a production app, handle the missing key gracefully in the UI.
-const apiKey = process.env.API_KEY || ''; 
-const ai = new GoogleGenAI({ apiKey });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
  * Uses Gemini to recommend modules based on a natural language query.
- * We pass the entire catalog context to the model so it can reason about which modules fit best.
  */
 export const getAiRecommendation = async (
   userQuery: string,
   availableModules: ModuleData[]
 ): Promise<string> => {
-  if (!apiKey) {
-    return "很抱歉，我目前没有 API 密钥，无法进行思考。请检查您的配置。";
-  }
-
   try {
-    // We strictly format the context to ensure the model understands the available data.
+    // Enhanced context with new fields
     const dataContext = JSON.stringify(availableModules.map(m => ({
       title: m.title,
       level: `${m.minLevel}-${m.maxLevel}`,
-      tags: m.tags.join(', '),
+      setting: m.setting,
+      style: m.styleLabel,
+      scores: {
+        dmFriendly: `${m.dmFriendlyScore}/5`,
+        story: `${m.storyScore}/5`
+      },
+      fvtt: m.fvtt ? 'Yes' : 'No',
       summary: m.summary
     })));
 
@@ -38,9 +37,10 @@ export const getAiRecommendation = async (
       规则：
       1. **必须使用中文**回答。
       2. 仅推荐列表中存在的模组。
-      3. 如果用户要求的模组不在列表中（例如，“20级冒险”），请礼貌地解释你只有列表中的模组，并建议最接近的替代方案。
-      4. 保持回答简洁（100字以内），但要具有 DND 奇幻风格的语调。
-      5. 在回答中清楚地标出模组的标题。
+      3. 你现在可以参考模组的“风格（style）”、“DM友好度（dmFriendly）”和“世设（setting）”来提供更精准的建议。
+      4. 如果用户询问“适合新手的模组”，优先寻找低等级且DM友好度高的模组。
+      5. 保持回答简洁（150字以内），语气要像一位博学的老法师。
+      6. 每次回答最后，请列出推荐模组的确切名称。
     `;
 
     const response = await ai.models.generateContent({
@@ -48,7 +48,7 @@ export const getAiRecommendation = async (
       contents: userQuery,
       config: {
         systemInstruction: systemPrompt,
-        temperature: 0.7, // Slightly creative but grounded
+        temperature: 0.7,
       },
     });
 
